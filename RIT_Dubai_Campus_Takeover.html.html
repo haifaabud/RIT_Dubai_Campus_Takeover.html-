@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIT Dubai: Campus Takeover</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at center, #002855 0%, #001226 100%);
+            color: #ffffff;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-rows: repeat(5, minmax(0, 1fr));
+            gap: 6px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #F36E21;
+            border-radius: 4px;
+        }
+
+        .tile-target-glow {
+            animation: tilePulse 1s infinite ease-in-out;
+            cursor: pointer;
+        }
+        @keyframes tilePulse {
+            0% { box-shadow: inset 0 0 0 3px #FFC72C, 0 0 15px #FFC72C; transform: scale(1); }
+            50% { box-shadow: inset 0 0 0 5px #F36E21, 0 0 25px #F36E21; transform: scale(1.02); }
+            100% { box-shadow: inset 0 0 0 3px #FFC72C, 0 0 15px #FFC72C; transform: scale(1); }
+        }
+
+        .floating-float-text {
+            animation: floatUp 1.5s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+
+        .tiger-token {
+            transition: all 0.25s ease-out;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .tiger-token:hover {
+            transform: scale(1.3) rotate(5deg);
+            z-index: 30;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+<style>
+/* Original navy/orange/gold palette, rounded cards and tiger artwork. */
+:root{--navy:#002855;--dark:#001935;--orange:#F36E21;--gold:#FFC72C}
+*{box-sizing:border-box}body{margin:0;font-family:Outfit,Arial,sans-serif;background:radial-gradient(circle at center,#002855,#001226);color:white}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.hidden{display:none!important}.topbar{background:#001935ef;border-bottom:1px solid #F36E2166;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font:700 22px Fredoka,Arial}.brand span{color:var(--orange)}.subtitle{font-size:12px;color:#bfdbfe;margin:5px 0}.tools{display:flex;gap:8px}.btn{border:1px solid #ffffff40;border-radius:12px;background:var(--navy);color:white;padding:10px 15px;font-weight:600}.btn:hover:not(:disabled){filter:brightness(1.2)}.primary{background:linear-gradient(100deg,var(--orange),var(--gold));color:var(--dark);font-family:Fredoka,Arial;font-weight:700}.danger{background:#991b1b}.small{font-size:12px;padding:7px 10px}.layout{max-width:1600px;width:100%;margin:auto;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px}.layout>*{min-width:0}.panel{background:#002855dd;border:1px solid #F36E2166;border-radius:24px;padding:20px;box-shadow:0 12px 35px #0003}.setup{max-width:780px;margin:28px auto;text-align:center}.setup h1{font:700 32px Fredoka;margin:12px 0}.setup .players{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left}.player-input{display:flex;gap:8px;background:#001935;padding:10px;border-radius:12px}.player-input input{min-width:0;width:100%}input,select{background:#001935;border:1px solid #ffffff50;border-radius:8px;color:white;padding:10px}label{display:block;color:#FFC72C;font-size:13px;font-weight:bold;margin:15px 0 8px}.pill{display:inline-block;border:1px solid #FFC72C66;border-radius:30px;background:#FFC72C18;padding:5px 10px;color:var(--gold);font-size:12px}.banner{display:flex;gap:14px;align-items:center;margin-bottom:14px}.banner h2{font:700 21px Fredoka;margin:3px 0}.banner p{color:#bfdbfe;margin:4px 0;font-size:14px}.board-scroll{overflow:auto;padding:3px}.board-grid{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(78px,1fr));gap:5px;aspect-ratio:1;min-width:760px}.board-tile{border:1px solid #F36E2160;border-radius:10px;background:#002855;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden;padding:5px 3px;min-width:0;color:white;cursor:pointer}.board-tile:hover{border-color:var(--gold)}.stripe{height:6px;position:absolute;top:0;left:0;right:0;background:var(--orange)}.tile-name{font:600 11px Fredoka;line-height:1.15;text-align:center;margin-top:6px;overflow-wrap:anywhere}.tile-price{font-size:10px;color:var(--gold)}.tokens{display:flex;flex-wrap:wrap;justify-content:center;gap:1px;min-height:19px}.token{border:1px solid white;border-radius:50%;font-size:11px;width:18px;height:18px;text-align:center;line-height:16px}.owner{font-size:9px;color:#bfdbfe;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hub{grid-area:2/2/9/9;background:linear-gradient(135deg,#002855,#001935);border:1px solid #F36E2180;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;gap:18px;position:relative}.hub .mascot{margin:0 auto}.hub-title{font:700 28px Fredoka;color:var(--gold)}.dice{display:flex;gap:15px}.die{background:white;border:2px solid var(--orange);border-radius:15px;color:var(--dark);width:64px;height:64px;display:grid;place-items:center;font-size:38px;box-shadow:0 8px 20px #0006}.actions{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}.hint{font-size:13px;color:#bfdbfe;line-height:1.5}.sidebar{display:flex;flex-direction:column;gap:16px}.sidebar h3{font:600 19px Fredoka;margin:0 0 14px}.person{border:1px solid #ffffff22;background:#001935bb;border-radius:14px;padding:12px;margin:8px 0;font-size:13px}.person.active{border-color:var(--gold);background:#F36E211c}.person.out{opacity:.5}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.gold{color:var(--gold)}.asset-row{padding:9px 0;border-bottom:1px solid #ffffff20;font-size:13px}.logs{max-height:190px;overflow:auto;font-size:12px;line-height:1.5}.logs p{padding-bottom:6px;border-bottom:1px solid #ffffff18}.overlay{position:fixed;inset:0;background:#000b;backdrop-filter:blur(8px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}.dialog{background:linear-gradient(#002855,#001935);border:2px solid var(--gold);border-radius:26px;max-width:620px;width:100%;max-height:88vh;overflow:auto;padding:26px;box-shadow:0 25px 80px #0009}.dialog h2{font:700 26px Fredoka;margin-top:0}.dialog h3{color:var(--gold);font:600 18px Fredoka}.dialog p,.dialog li{font-size:14px;line-height:1.6}.dialog table{width:100%;border-collapse:collapse;font-size:13px}.dialog th,.dialog td{text-align:left;border-bottom:1px solid #ffffff25;padding:8px 5px}.dialog .actions{margin-top:20px}.notice{padding:12px;background:#FFC72C16;border:1px solid #FFC72C66;border-radius:12px;font-size:14px;margin:12px 0}.scroll-list{max-height:260px;overflow:auto}.mascot{width:110px;margin:auto}.status{min-height:40px}.rules-list>li{margin-bottom:18px}.muted{color:#bfdbfe}body{user-select:auto}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr}.sidebar .panel:last-child{grid-column:1/-1}}
+@media(max-width:600px){.topbar{padding:12px}.brand{font-size:17px}.setup{margin:12px;padding:18px}.setup .players{grid-template-columns:1fr}.sidebar{display:flex}.layout{padding:8px}.dialog{padding:18px}.board-scroll:before{content:'Swipe sideways to see the whole board ↔';display:block;color:#bfdbfe;font-size:12px;margin-bottom:8px}}
+</style>
+<header class="topbar"><div><div class="brand">🐯 RIT DUBAI: <span>CAMPUS TAKEOVER</span></div><p class="subtitle">Buy the campus. Collect Tiger Tokens. Stay off probation.</p></div><div class="tools"><button class="btn small" onclick="game.toggleAudioMute()" id="audio-toggle" aria-label="Toggle sound">🔇</button><button class="btn small" onclick="ui.settings()">⚙ Settings</button><button class="btn small" onclick="ui.rules()">❓ Rules</button></div></header>
+<section id="setup" class="panel setup"><div class="mascot" id="setup-mascot"></div><h1>WELCOME TO <span class="gold">CAMPUS TAKEOVER</span></h1><p class="muted">Pick your tiger token. Build your portfolio. Make every turn count.</p><p><span class="pill">12 rounds</span> <span class="pill">1,200 TT per player</span> <span class="pill">2–8 players</span></p><label for="player-count">Number of players: <span id="count-label">3</span></label><input id="player-count" type="range" min="2" max="8" value="3" oninput="ui.setupPlayers()" style="width:100%;accent-color:#F36E21"><label>Player names & tiger tokens</label><div id="player-inputs" class="players"></div><p class="hint">The game rolls for everyone to choose the starting player. Ties are rerolled. Players then take turns in the order listed, wrapping back to the top.</p><button class="btn primary" style="width:100%;padding:17px" onclick="game.start()">🚀 LAUNCH CAMPUS MATCH</button><p class="hint">One shared screen • The game handles the bank • Fictional campus ownership</p></section>
+<main id="match" class="layout hidden"><section><div class="panel banner"><div id="banner-mascot" style="width:60px;flex-shrink:0"></div><div><span id="round" class="pill">Round 1 / 12</span><h2 id="turn-title"></h2><p id="status" class="status" aria-live="polite"></p></div></div><div class="panel" style="padding:10px"><div class="board-scroll"><div class="board-grid" id="board"><div class="hub"><div class="hub-title">RIT DUBAI<br>CAMPUS HUB</div><div class="mascot" id="hub-mascot" style="width:140px"></div><div class="pill" id="turn-pill"></div><div class="dice"><div class="die" id="die1">1</div><div class="die" id="die2">1</div></div><div id="turn-actions" class="actions"></div><div class="hint" id="hub-hint"></div><button id="mode" class="btn small" onclick="game.toggleMode()">⚡ Auto movement</button><div class="hint">Click any tile to inspect its ownership card.<br>No upgrades. No trading. One roll per turn.</div></div></div></div></div></section><aside class="sidebar"><section class="panel"><h3>🏆 CAMPUS LEADERBOARD</h3><div id="leaderboard"></div></section><section class="panel"><h3>🏢 YOUR PORTFOLIO</h3><p class="hint">Sell to the bank for half the purchase price during your turn or to settle a payment.</p><div id="portfolio" class="scroll-list"></div></section><section class="panel"><h3>LIVE CAMPUS LOG</h3><div class="logs" id="logs" aria-live="polite"></div></section></aside></main>
+<div id="modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog"><h2 id="modal-title"></h2><div id="modal-body"></div><div class="actions" id="modal-actions"></div></div></div>
+
+<script>
+        const MascotSVG = {
+            generate(expression = 'happy', size = '100%') {
+                const expressions = {
+                    happy: '<path d="M 35 60 Q 50 72 65 60" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>',
+                    rich: '<path d="M 35 62 Q 50 75 65 62" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round"/><text x="25" y="45" font-size="12" font-weight="bold" fill="#FFC72C">$</text><text x="65" y="45" font-size="12" font-weight="bold" fill="#FFC72C">$</text>',
+                    surprised: '<circle cx="50" cy="62" r="7" fill="#000"/>',
+                    confused: '<path d="M 38 64 Q 50 56 62 64" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>'
+                };
+
+                const exprSvg = expressions[expression] || expressions.happy;
+
+                return `
+                <svg viewBox="0 0 100 100" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="tigerFur" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#F97316"/>
+                            <stop offset="100%" stop-color="#EA580C"/>
+                        </radialGradient>
+                        <linearGradient id="hatBand" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#FFC72C"/>
+                            <stop offset="100%" stop-color="#F59E0B"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Tiger Ears -->
+                    <circle cx="28" cy="28" r="12" fill="#EA580C" stroke="#000" stroke-width="2"/>
+                    <circle cx="28" cy="28" r="7" fill="#FEF08A"/>
+                    <circle cx="72" cy="28" r="12" fill="#EA580C" stroke="#000" stroke-width="2"/>
+                    <circle cx="72" cy="28" r="7" fill="#FEF08A"/>
+
+                    <!-- Head Base -->
+                    <ellipse cx="50" cy="52" rx="32" ry="28" fill="url(#tigerFur)" stroke="#000" stroke-width="2.5"/>
+
+                    <!-- Tiger Stripes -->
+                    <path d="M 50 26 L 47 34 L 53 34 Z" fill="#000"/>
+                    <path d="M 22 45 L 30 47 L 24 53 Z" fill="#000"/>
+                    <path d="M 78 45 L 70 47 L 76 53 Z" fill="#000"/>
+
+                    <!-- Muzzle / Cheeks -->
+                    <ellipse cx="42" cy="60" rx="10" ry="8" fill="#FFF"/>
+                    <ellipse cx="58" cy="60" rx="10" ry="8" fill="#FFF"/>
+                    <polygon points="50,52 45,46 55,46" fill="#1E293B"/>
+
+                    <!-- Eyes -->
+                    <ellipse cx="36" cy="42" rx="5" ry="6" fill="#FFF" stroke="#000" stroke-width="1.5"/>
+                    <circle cx="37" cy="42" r="2.5" fill="#000"/>
+                    
+                    <ellipse cx="64" cy="42" rx="5" ry="6" fill="#FFF" stroke="#000" stroke-width="1.5"/>
+                    <circle cx="63" cy="42" r="2.5" fill="#000"/>
+
+                    <!-- Expression Mouth -->
+                    ${exprSvg}
+
+                    <!-- Monocle 🧐 -->
+                    <circle cx="64" cy="42" r="8" fill="rgba(255,255,255,0.3)" stroke="#FFC72C" stroke-width="2"/>
+                    <path d="M 72 42 Q 78 55 74 68" fill="none" stroke="#FFC72C" stroke-width="1" stroke-dasharray="2 1"/>
+
+                    <!-- Monopoly Top Hat 🎩 -->
+                    <path d="M 25 28 L 75 28 C 75 28 78 28 78 25 C 78 22 72 22 72 22 L 28 22 C 28 22 22 22 22 25 C 22 28 25 28 25 28 Z" fill="#0F172A"/>
+                    <rect x="33" y="2" width="34" height="22" rx="2" fill="#0F172A" stroke="#000" stroke-width="1.5"/>
+                    <rect x="33" y="18" width="34" height="4" fill="url(#hatBand)"/>
+
+                    <!-- Tuxedo Bow Tie -->
+                    <polygon points="50,75 38,70 38,80" fill="#1E293B"/>
+                    <polygon points="50,75 62,70 62,80" fill="#1E293B"/>
+                    <circle cx="50" cy="75" r="3" fill="#FFC72C"/>
+                </svg>
+                `;
+            }
+        };
+
+        class WebAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.musicGain = null;
+                this.sfxGain = null;
+                this.musicVolume = 0.5;
+                this.sfxVolume = 0.8;
+                this.isMuted = false;
+                this.timerId = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    
+                    this.musicGain = this.ctx.createGain();
+                    this.sfxGain = this.ctx.createGain();
+
+                    this.musicGain.gain.value = this.musicVolume;
+                    this.sfxGain.gain.value = this.sfxVolume;
+
+                    this.musicGain.connect(this.ctx.destination);
+                    this.sfxGain.connect(this.ctx.destination);
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playSfx(type) {
+                if (this.isMuted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+
+                if (type === 'roll') {
+                    for (let i = 0; i < 6; i++) {
+                        const osc = this.ctx.createOscillator();
+                        const g = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(150 + Math.random() * 200, now + i * 0.05);
+                        g.gain.setValueAtTime(0.3, now + i * 0.05);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.04);
+                        osc.connect(g);
+                        g.connect(this.sfxGain);
+                        osc.start(now + i * 0.05);
+                        osc.stop(now + i * 0.05 + 0.05);
+                    }
+                } else if (type === 'step') {
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.06);
+                    g.gain.setValueAtTime(0.2, now);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+                    osc.connect(g);
+                    g.connect(this.sfxGain);
+                    osc.start(now);
+                    osc.stop(now + 0.06);
+                } else if (type === 'buy') {
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((f, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const g = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(f, now + idx * 0.06);
+                        g.gain.setValueAtTime(0.3, now + idx * 0.06);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.06 + 0.2);
+                        osc.connect(g);
+                        g.connect(this.sfxGain);
+                        osc.start(now + idx * 0.06);
+                        osc.stop(now + idx * 0.06 + 0.25);
+                    });
+                } else if (type === 'kudos') {
+                    [440, 554.37, 659.25, 880, 1108.73].forEach((f, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const g = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(f, now + idx * 0.05);
+                        g.gain.setValueAtTime(0.25, now + idx * 0.05);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.05 + 0.2);
+                        osc.connect(g);
+                        g.connect(this.sfxGain);
+                        osc.start(now + idx * 0.05);
+                        osc.stop(now + idx * 0.05 + 0.22);
+                    });
+                } else if (type === 'win') {
+                    [440, 554.37, 659.25, 880].forEach((f, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const g = this.ctx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(f, now + idx * 0.12);
+                        g.gain.setValueAtTime(0.25, now + idx * 0.12);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
+                        osc.connect(g);
+                        g.connect(this.sfxGain);
+                        osc.start(now + idx * 0.12);
+                        osc.stop(now + idx * 0.12 + 0.35);
+                    });
+                }
+            }
+
+            startMusicLoop() {
+                this.init();
+                this.stopMusicLoop();
+                if (this.isMuted) return;
+
+                let step = 0;
+                const playBeat = () => {
+                    if (this.isMuted) return;
+                    const now = this.ctx.currentTime;
+                    const chords = [[261.63, 329.63, 392.00], [220.00, 261.63, 329.63], [174.61, 220.00, 261.63], [196.00, 246.94, 293.66]];
+                    const currentChord = chords[Math.floor(step / 4) % chords.length];
+                    currentChord.forEach(freq => {
+                        const osc = this.ctx.createOscillator();
+                        const g = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now);
+                        g.gain.setValueAtTime(0.07, now);
+                        g.gain.exponentialRampToValueAtTime(0.005, now + 0.8);
+                        osc.connect(g);
+                        g.connect(this.musicGain);
+                        osc.start(now);
+                        osc.stop(now + 0.85);
+                    });
+                    step++;
+                };
+
+                this.timerId = setInterval(playBeat, 750);
+            }
+
+            stopMusicLoop() {
+                if (this.timerId) {
+                    clearInterval(this.timerId);
+                    this.timerId = null;
+                }
+            }
+
+            setSfxVol(val) {
+                this.sfxVolume = val / 100;
+                if (this.sfxGain) this.sfxGain.gain.value = this.sfxVolume;
+            }
+
+            setMusicVol(val) {
+                this.musicVolume = val / 100;
+                if (this.musicGain) this.musicGain.gain.value = this.musicVolume;
+            }
+        }
+
+        const audio = new WebAudioEngine();
+
+// Each mascot instance needs distinct SVG gradient identifiers.
+const originalMascot = MascotSVG.generate.bind(MascotSVG);
+let mascotCount = 0;
+MascotSVG.generate = (...args) => {
+ const suffix = ++mascotCount;
+ return originalMascot(...args).replaceAll('tigerFur', 'tigerFur'+suffix).replaceAll('hatBand', 'hatBand'+suffix);
+};
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TOKENS=[['🐯','#F36E21'],['🐾','#FFC72C'],['⚡','#3B82F6'],['🎓','#10B981'],['👑','#EC4899'],['🧪','#14B8A6'],['💼','#8B5CF6'],['🏎️','#EF4444']];
+const NAMES=['Quiet Room','Music Room','Admissions','B Block','C Block','D Block','E Block','H Block','Library','Cafeteria','Mosque','Sports Complex','Keeta Delivery Drone','Robotics Building','Innovation Center'];
+const POS=[1,2,4,5,7,9,11,13,14,17,19,21,25,28,30];
+function makeBoard(){
+ const b=Array.from({length:32},(_,id)=>({id,owner:null,price:0,rent:0,color:'#8B5CF6',name:'Wild Card',type:'wild'}));
+ POS.forEach((id,i)=>Object.assign(b[id],{name:NAMES[i],type:'asset',price:100+i*20,rent:10+i*5,color:['#F36E21','#3B82F6','#10B981','#F59E0B'][Math.floor(i/4)]}));
+ [[0,'New Semester','start'],[8,'Probation','probation'],[16,'Student Lounge','rest'],[24,'Go to Probation','goProbation']].forEach(([id,name,type])=>Object.assign(b[id],{name,type,color:'#FFC72C'}));
+ [[6,'Elevators'],[22,'Bathrooms']].forEach(([id,name])=>Object.assign(b[id],{name,type:'utility',price:150,color:'#14B8A6'}));
+ [[12,'Printing Fees',20],[20,'Lab Materials',40],[26,'Student ID Fee',30],[29,'Club Registration',50]].forEach(([id,name,fee])=>Object.assign(b[id],{name,type:'payment',fee,color:'#EF4444'}));
+ return b;
+}
+const CARDS=[
+ {title:'Scholarship Success',text:'You earned a scholarship. Collect 100 TT.',type:'money',amount:100},
+ {title:'Lost Student ID',text:'Replace your lost student ID. Pay 30 TT.',type:'money',amount:-30},
+ {title:'Lunch Break',text:'Head to the Cafeteria. Resolve that space normally.',type:'move',to:17},
+ {title:'Academic Warning',text:'Go directly to Probation. Do not collect 200 TT.',type:'probation'},
+ {title:'Study Card',text:'Get Out of Probation. Keep this card and use it at the start of a turn in probation.',type:'study'},
+ {title:'Project Prize',text:'Your project won a prize. Collect 80 TT.',type:'money',amount:80},
+ {title:'Course Materials',text:'Buy course materials. Pay 50 TT.',type:'money',amount:-50},
+ {title:'Library Session',text:'Go to the Library. Resolve that space normally.',type:'move',to:14},
+ {title:'New Semester',text:'Advance to New Semester. Collect 200 TT once.',type:'move',to:0},
+ {title:'Lift to Class',text:'Go to Elevators. Use your original dice total if a usage fee is due.',type:'move',to:6},
+ {title:'Campus Help',text:'You helped at a campus event. Collect 60 TT.',type:'money',amount:60},
+ {title:'Printing Costs',text:'Print your project report. Pay 20 TT.',type:'money',amount:-20}
+];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+class CampusGame{
+ constructor(){this.players=[];this.tiles=makeBoard();this.round=1;this.phase='setup';this.active=false;this.current=0;this.served=new Set();this.deck=[];this.debt=null;this.manual=false;this.lastRoll=0;this.status='';this.event=null;this.pending=null;this.muted=true;this.generation=0;}
+ get player(){return this.players[this.current];}
+ owned(p){return this.tiles.filter(t=>t.owner===p.id);}
+ score(p){return p.cash+this.owned(p).reduce((s,t)=>s+t.price,0);}
+ dice(){return [1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)];}
+ sound(kind){if(!this.muted){try{audio.playSfx(kind);}catch(e){/* Sound is optional. */}}}
+ log(s){const p=document.createElement('p');p.textContent=s;$('logs').prepend(p);}
+ say(s){this.status=s;}
+ start(){
+ const count=Number($('player-count').value);if(count<2||count>8)return;
+ this.generation++;this.tiles=makeBoard();this.players=Array.from({length:count},(_,i)=>({id:i,name:$('name-'+i).value.trim().slice(0,30)||`Student ${i+1}`,token:Number($('token-'+i).value),cash:1200,pos:0,probation:false,waited:0,study:null,out:false}));
+ this.deck=shuffle(CARDS.map(c=>({...c})));this.served=new Set();this.round=1;this.debt=null;this.event=null;this.pending=null;this.lastRoll=0;this.active=true;this.phase='opening';$('logs').innerHTML='';
+ let candidates=this.players.map(p=>p.id),results=[];
+ do{const rolls=candidates.map(id=>({id,d:this.dice()}));const max=Math.max(...rolls.map(r=>r.d[0]+r.d[1]));results.push(...rolls.map(r=>`${this.players[r.id].name}: ${r.d[0]} + ${r.d[1]} = ${r.d[0]+r.d[1]}`));candidates=rolls.filter(r=>r.d[0]+r.d[1]===max).map(r=>r.id);if(candidates.length>1)results.push('Tie for highest total — tied players roll again.');}while(candidates.length>1);
+ this.current=candidates[0];$('setup').classList.add('hidden');$('match').classList.remove('hidden');this.log('Match started. Each player receives 1,200 TT.');results.forEach(r=>this.log(r));this.say(`${this.player.name} won the opening roll.`);ui.render();
+ ui.modal('Who starts?',`<p>${results.map(esc).join('<br>')}</p><div class="notice">${esc(this.player.name)} starts. Play follows the player list and wraps around.</div>`,[{text:'Start Round 1',action:()=>{ui.close();this.beginTurn();},primary:true}]);
+ }
+ beginTurn(){if(!this.active)return;const p=this.player;if(p.probation&&p.waited>=3){p.probation=false;p.waited=0;this.log(`${p.name} has served three turns and leaves probation for free.`);}this.phase=p.probation?'probation':'ready';this.say(p.probation?'Choose how to leave probation. Your assets cannot collect fees.':'Roll both dice. You can also sell an asset before rolling.');ui.render();}
+ roll(){if(!this.active||!['ready','probation'].includes(this.phase))return;const wasProbation=this.phase==='probation';const d=this.dice();this.lastRoll=d[0]+d[1];$('die1').textContent=d[0];$('die2').textContent=d[1];this.sound('roll');this.log(`${this.player.name} rolled ${d[0]} + ${d[1]} = ${this.lastRoll}.`);
+ if(wasProbation){if(d[0]!==d[1]){this.waitProbation(true);return;}this.player.probation=false;this.player.waited=0;this.log(`${this.player.name} rolled matching dice and leaves probation.`);}
+ this.moveSteps(this.lastRoll);
+ }
+ moveSteps(steps){this.pending={steps,to:(this.player.pos+steps)%32};this.phase='moving';this.say(this.manual?`Click the glowing ${this.tiles[this.pending.to].name} tile to move.`:`Moving to ${this.tiles[this.pending.to].name}…`);ui.render();if(!this.manual){const gen=this.generation;setTimeout(()=>{if(gen===this.generation&&this.phase==='moving')this.finishMove();},350);}}
+ finishMove(){if(this.phase!=='moving'||!this.pending)return;const {steps,to}=this.pending;const crossings=Math.floor((this.player.pos+steps)/32);if(crossings){this.player.cash+=200*crossings;this.log(`${this.player.name} collects ${200*crossings} TT at New Semester.`);}this.player.pos=to;this.pending=null;this.phase='resolving';ui.render();this.land();}
+ land(){const p=this.player,t=this.tiles[p.pos];this.log(`${p.name} lands on ${t.name}.`);
+ if(['asset','utility'].includes(t.type)){
+  if(t.owner===null){this.phase='purchase';this.say(`Buy ${t.name} for ${t.price} TT or pass.`);ui.render();this.purchaseModal();return;}
+  const owner=this.players[t.owner];if(owner.id===p.id){this.endAction('You own this asset. No fee is due.');return;}
+  if(owner.probation){this.endAction(`${owner.name} is in probation. No fee is due.`);return;}
+  const fee=t.type==='utility'?this.lastRoll*(this.owned(owner).filter(x=>x.type==='utility').length===2?7:4):t.rent;
+  this.charge(fee,owner.id,`${t.name} usage fee`,()=>this.endAction(`Paid ${fee} TT to ${owner.name}.`));return;
+ }
+ if(t.type==='wild'){this.draw();return;}
+ if(t.type==='goProbation'){this.sendProbation();return;}
+ if(t.type==='payment'){this.charge(t.fee,null,t.name,()=>this.endAction(`Paid ${t.fee} TT to the bank.`));return;}
+ this.endAction(t.type==='probation'?'Just visiting. You are not on probation.':t.type==='rest'?'Take a break at the Student Lounge.': 'New Semester payment has been collected for this crossing.');
+ }
+ purchaseModal(){const t=this.tiles[this.player.pos];ui.modal(t.name,`<span class="pill">${t.type==='utility'?'CAMPUS UTILITY':'CAMPUS ASSET'}</span><p>Purchase: <strong class="gold">${t.price} TT</strong></p><p>Usage fee: ${t.type==='utility'?'4 × the visitor’s dice total. Own both utilities to charge 7 ×.':t.rent+' TT'}</p><p>Your balance: ${this.player.cash} TT</p><p class="hint">No fees while the owner is in probation. No upgrades or group bonuses.</p>${ui.saleList()}`,[{text:`Buy · ${t.price} TT`,action:()=>this.buy(),disabled:this.player.cash<t.price,primary:true},{text:'Pass',action:()=>{ui.close();this.endAction('Purchase passed. The asset remains unowned.');}}]);}
+ buy(){if(this.phase!=='purchase')return;const t=this.tiles[this.player.pos];if(t.owner!==null||this.player.cash<t.price)return;this.player.cash-=t.price;t.owner=this.player.id;this.log(`${this.player.name} bought ${t.name} for ${t.price} TT.`);this.sound('buy');ui.close();this.endAction('Asset purchased. You may sell assets or end your turn.');}
+ draw(){if(!this.deck.length){this.endAction('No Wild Cards remain in the deck.');return;}this.event=this.deck.shift();this.phase='card';ui.render();ui.modal('🃏 '+this.event.title,`<div class="mascot">${MascotSVG.generate(this.event.type==='probation'?'surprised':'happy')}</div><div class="notice">${esc(this.event.text)}</div>`,[{text:this.event.type==='study'?'Keep Study Card':'Follow card',action:()=>this.applyCard(),primary:true}]);}
+ applyCard(){if(this.phase!=='card'||!this.event)return;const c=this.event;this.event=null;ui.close();this.log(`${this.player.name}: ${c.text}`);if(c.type==='study'){this.player.study=c;this.endAction('Study Card saved. Use it at the start of a turn in probation.');return;}this.deck.push(c);
+ if(c.type==='money'){if(c.amount>=0){this.player.cash+=c.amount;this.endAction(`Collected ${c.amount} TT.`);}else this.charge(-c.amount,null,c.title,()=>this.endAction(`Paid ${-c.amount} TT.`));}
+ else if(c.type==='probation')this.sendProbation();
+ else if(c.type==='move')this.moveSteps((c.to-this.player.pos+32)%32||32);
+ }
+ sendProbation(){const p=this.player;p.pos=8;p.probation=true;p.waited=0;this.log(`${p.name} enters probation. No semester payment or asset fees.`);this.endAction('Sent to probation. This turn does not count as a turn served.');}
+ waitProbation(failed=false){if(this.phase!=='probation')return;this.player.waited++;this.log(`${this.player.name} ${failed?'did not roll matching dice':'waited'}: ${this.player.waited}/3 turns served.`);this.endAction(this.player.waited===3?'Three turns served. Leave for free at the start of your next turn.':'Still in probation. No asset fees can be collected.');}
+ leaveProbation(method){if(this.phase!=='probation')return;const p=this.player;if(method==='pay'){if(p.cash<50)return;p.cash-=50;this.log(`${p.name} paid 50 TT to leave probation.`);}else if(method==='study'){if(!p.study)return;this.deck.push(p.study);p.study=null;this.log(`${p.name} used a Study Card.`);}else return;p.probation=false;p.waited=0;this.phase='ready';this.say('You have left probation. Roll both dice to move.');ui.render();}
+ endAction(message){if(!this.active)return;this.phase='end';this.say(message);ui.render();}
+ charge(amount,creditor,reason,after){this.debt={amount,creditor,reason,after};this.phase='debt';if(this.player.cash>=amount)this.settle();else{this.say(`You owe ${amount} TT. Sell assets to raise funds.`);ui.render();this.debtModal();}}
+ debtModal(){const d=this.debt;if(!d)return;const capacity=this.player.cash+this.owned(this.player).reduce((s,t)=>s+t.price/2,0);ui.modal('Payment due',`<div class="notice">${esc(d.reason)}: <strong>${d.amount} TT</strong><br>Payable to ${d.creditor===null?'the bank':esc(this.players[d.creditor].name)}. Cash available: ${this.player.cash} TT.</div><p>Sell assets for half their printed purchase price to cover this payment.</p>${ui.saleList()}`,[{text:'Pay amount owed',action:()=>this.settle(),disabled:this.player.cash<d.amount,primary:true},...(capacity<d.amount?[{text:'Sell remaining assets & leave game',action:()=>this.bankrupt()}]:[])]);}
+ settle(){if(!this.debt||this.player.cash<this.debt.amount)return;const d=this.debt;this.player.cash-=d.amount;if(d.creditor!==null)this.players[d.creditor].cash+=d.amount;this.log(`${this.player.name} paid ${d.amount} TT for ${d.reason}.`);this.debt=null;ui.close();d.after();}
+ sell(id){if(!this.active||!['ready','probation','end','purchase','debt'].includes(this.phase))return;const t=this.tiles[id];if(t.owner!==this.player.id)return;this.player.cash+=t.price/2;t.owner=null;this.log(`${this.player.name} sold ${t.name} to the bank for ${t.price/2} TT.`);ui.render();if(this.phase==='debt')this.debtModal();else if(this.phase==='purchase')this.purchaseModal();}
+ bankrupt(){if(!this.debt)return;const p=this.player,capacity=p.cash+this.owned(p).reduce((s,t)=>s+t.price/2,0);if(capacity>=this.debt.amount)return;this.owned(p).forEach(t=>{p.cash+=t.price/2;t.owner=null;});if(this.debt.creditor!==null)this.players[this.debt.creditor].cash+=p.cash;p.cash=0;p.out=true;if(p.study){this.deck.push(p.study);p.study=null;}this.debt=null;ui.close();this.log(`${p.name} cannot pay and leaves the game.`);this.phase='end';if(this.players.filter(x=>!x.out).length===1)this.finish();else this.endTurn();}
+ endTurn(){if(!this.active||this.phase!=='end')return;this.served.add(this.player.id);const alive=this.players.filter(p=>!p.out);if(alive.length===1){this.finish();return;}if(alive.every(p=>this.served.has(p.id))){if(this.round===12){this.finish();return;}this.round++;this.served.clear();}
+ do{this.current=(this.current+1)%this.players.length;}while(this.player.out);this.beginTurn();}
+ finish(){this.active=false;this.phase='finished';const ranked=this.players.filter(p=>!p.out).sort((a,b)=>this.score(b)-this.score(a)||b.cash-a.cash);const best=ranked[0];this.winners=ranked.filter(p=>this.score(p)===this.score(best)&&p.cash===best.cash);this.say('Match complete. Thanks for playing!');ui.render();this.showResults();this.sound('win');if(window.confetti)window.confetti({particleCount:140,spread:80,origin:{y:.6}});}
+ showResults(){const ranked=this.players.filter(p=>!p.out).sort((a,b)=>this.score(b)-this.score(a)||b.cash-a.cash);ui.modal('🏆 '+this.winners.map(p=>p.name).join(' & '),`<div class="mascot">${MascotSVG.generate('rich')}</div><h3>RIT Dubai Campus Champion${this.winners.length>1?'s':''}</h3><p>${ranked.length===1?'Last player remaining.':'12 rounds complete. Total = cash + printed prices of owned assets and utilities. Cash breaks a tied total.'}</p><table><tr><th>Player</th><th>Cash</th><th>Assets</th><th>Total</th></tr>${ranked.map(p=>`<tr><td>${esc(p.name)}${p.probation?' (probation)':''}</td><td>${p.cash}</td><td>${this.score(p)-p.cash}</td><td>${this.score(p)} TT</td></tr>`).join('')}</table><p class="hint">Probation does not reduce final asset value. Study Cards have no cash value.</p>`,[{text:'View final board',action:()=>ui.close()},{text:'Play again',action:()=>this.reset(),primary:true}]);}
+ toggleMode(){this.manual=!this.manual;$('mode').textContent=this.manual?'🎯 Click target to move':'⚡ Auto movement';if(this.phase==='moving'&&!this.manual)this.finishMove();}
+ toggleAudioMute(){this.muted=!this.muted;audio.isMuted=this.muted;$('audio-toggle').textContent=this.muted?'🔇':'🎵';try{if(this.muted)audio.stopMusicLoop();else{audio.init();audio.startMusicLoop();}}catch(e){this.muted=true;audio.isMuted=true;$('audio-toggle').textContent='🔇';}}
+ reset(){this.generation++;audio.stopMusicLoop();this.active=false;this.phase='setup';ui.close();$('match').classList.add('hidden');$('setup').classList.remove('hidden');}
+}
+const game=new CampusGame();
+const ui={
+ setupPlayers(){const count=Number($('player-count').value);$('count-label').textContent=count;const old=Array.from($('player-inputs').querySelectorAll('input')).map(x=>x.value);$('player-inputs').innerHTML=Array.from({length:count},(_,i)=>`<div class="player-input"><select id="token-${i}" aria-label="Player ${i+1} token">${TOKENS.map((t,j)=>`<option value="${j}" ${j===i?'selected':''}>${t[0]}</option>`).join('')}</select><input id="name-${i}" maxlength="30" aria-label="Player ${i+1} name" value="${esc(old[i]||'Student '+(i+1))}"></div>`).join('');},
+ modal(title,body,actions){$('modal-title').textContent=title;$('modal-body').innerHTML=body;$('modal-actions').innerHTML='';for(const a of actions){const b=document.createElement('button');b.className='btn'+(a.primary?' primary':'');b.textContent=a.text;b.disabled=!!a.disabled;b.onclick=a.action;$('modal-actions').append(b);}$('modal').classList.remove('hidden');$('modal-actions').querySelector('button:not(:disabled)')?.focus();},
+ close(){$('modal').classList.add('hidden');},
+ saleList(){const assets=game.owned(game.player);return assets.length?`<div class="scroll-list">${assets.map(t=>`<div class="asset-row row"><span>${esc(t.name)}</span><button class="btn small" onclick="game.sell(${t.id})">Sell · ${t.price/2} TT</button></div>`).join('')}</div>`:'<p class="hint">No assets available to sell.</p>';},
+ inspect(id){if(game.phase==='moving'){if(game.pending?.to===id)game.finishMove();return;}if(!['ready','probation','end','finished'].includes(game.phase))return;const t=game.tiles[id],owner=t.owner===null?null:game.players[t.owner];this.modal(t.name,`<p>${t.type==='asset'?`Purchase: ${t.price} TT • Usage fee: ${t.rent} TT`:t.type==='utility'?'Purchase: 150 TT. Fee: 4 × dice total or 7 × if the owner has both utilities.':t.type==='wild'?'Draw the top Wild Card and follow its instructions.':t.type==='start'?'Collect 200 TT when passing or landing here. No payment when sent directly to probation.':t.type==='probation'?'Just visiting on an ordinary landing. Players sent here cannot collect asset fees.':t.type==='rest'?'Take a break. No fee or reward.':t.type==='goProbation'?'Go directly to probation. Do not collect 200 TT.':`Pay ${t.fee} TT to the bank.`}</p>${t.price?`<div class="notice">${owner?`Owner: ${esc(owner.name)}${owner.probation?' — fees suspended during probation':''}`:'Unowned. Land here to purchase.'}</div>`:''}`,[{text:'Close',action:()=>this.close()}]);},
+ render(){if(!game.players.length)return;const p=game.player;$('round').textContent=`Round ${game.round} / 12`;$('turn-title').textContent=game.active?`${TOKENS[p.token][0]} ${p.name}’s turn`:'Campus Champion declared';$('turn-pill').textContent=game.active?`${p.name} • ${p.cash} TT`:'Match complete';$('status').textContent=game.status;$('hub-hint').textContent=game.status;
+ this.board();this.leaderboard();$('portfolio').innerHTML=game.active?this.saleList():'<p class="hint">Match finished. Inspect the board or view results.</p>';if(!['ready','end','probation','purchase','debt'].includes(game.phase))$('portfolio').querySelectorAll('button').forEach(b=>b.disabled=true);
+ const buttons=[];if(game.phase==='ready')buttons.push(['🎲 Roll dice',()=>game.roll(),false]);if(game.phase==='probation')buttons.push(['Pay 50 TT',()=>game.leaveProbation('pay'),p.cash<50],['🎲 Try matching dice',()=>game.roll(),false],['Wait this turn',()=>game.waitProbation(),false],['📚 Use Study Card',()=>game.leaveProbation('study'),!p.study]);if(game.phase==='end')buttons.push(['End turn →',()=>game.endTurn(),false]);if(game.phase==='finished')buttons.push(['🏆 View results',()=>game.showResults(),false]);$('turn-actions').innerHTML='';buttons.forEach(([label,fn,disabled])=>{const b=document.createElement('button');b.className='btn primary';b.textContent=label;b.onclick=fn;b.disabled=disabled;$('turn-actions').append(b);});
+ },
+ board(){document.querySelectorAll('#board > .board-tile').forEach(n=>n.remove());game.tiles.forEach(t=>{let row,col;const i=t.id;if(i<=8){row=1;col=i+1;}else if(i<=16){row=i-7;col=9;}else if(i<=24){row=9;col=25-i;}else{row=33-i;col=1;}const el=document.createElement('button');el.className='board-tile'+(game.phase==='moving'&&game.pending?.to===i?' tile-target-glow':'');el.style.gridRow=row;el.style.gridColumn=col;el.id='tile-'+i;const owner=t.owner===null?null:game.players[t.owner];el.innerHTML=`<div class="stripe" style="background:${t.color}"></div><div class="tile-name">${esc(t.name)}</div><div class="tile-price">${t.price?t.price+' TT':t.type==='payment'?'Pay '+t.fee+' TT':t.type==='start'?'+200 TT':''}</div><div class="owner">${owner?TOKENS[owner.token][0]+' '+esc(owner.name)+(owner.probation?' ⏸':''):''}</div><div class="tokens">${game.players.filter(p=>!p.out&&p.pos===i).map(p=>`<span class="token" title="${esc(p.name)}" style="background:${TOKENS[p.token][1]}">${TOKENS[p.token][0]}</span>`).join('')}</div>`;el.setAttribute('aria-label',t.name+(owner?', owned by '+owner.name:''));el.onclick=()=>this.inspect(i);$('board').append(el);});},
+ leaderboard(){$('leaderboard').innerHTML=game.players.map(p=>`<div class="person ${p.id===game.player.id&&game.active?'active':''} ${p.out?'out':''}"><div class="row"><strong>${TOKENS[p.token][0]} ${esc(p.name)}</strong><strong class="gold">${p.cash} TT</strong></div><div class="hint">${p.out?'Out of the game':`Total value: ${game.score(p)} TT • ${game.owned(p).length} assets`}</div>${p.probation&&!p.out?`<div class="gold">Probation · ${p.waited}/3 turns served · no fees</div>`:''}${p.study?'<div>📚 Study Card saved</div>':''}</div>`).join('');},
+ settings(){if(!['setup','ready','probation','end','finished'].includes(game.phase))return;this.modal('⚙ Match settings',`<p>The rules are fixed: 1,200 TT per player and 12 rounds.</p><label>Music volume</label><input type="range" min="0" max="100" value="${audio.musicVolume*100}" oninput="audio.setMusicVol(this.value)" style="width:100%"><label>Sound effects</label><input type="range" min="0" max="100" value="${audio.sfxVolume*100}" oninput="audio.setSfxVol(this.value)" style="width:100%"><p class="hint">Sound starts muted. Use the music button in the header to enable it.</p>`,[{text:'Done',action:()=>this.close()},{text:'Reset match',action:()=>this.modal('Reset this match?','<p>This returns to setup and clears the current game.</p>',[{text:'Cancel',action:()=>this.close()},{text:'Reset',action:()=>game.reset()}])}]);},
+ rules(){if(!['setup','ready','probation','end','finished'].includes(game.phase))return;this.modal('📖 How to play',RULES,[{text:'Got it',action:()=>this.close(),primary:true}]);}
+};
+const RULES=`
+<h3>1. Objective</h3><p>Buy campus assets and collect usage fees. After 12 rounds, the highest total value wins. Further along the board means higher asset prices and fees.</p>
+<h3>2. Materials</h3><p>This digital version provides the board, two dice, 2–8 player tokens, Tiger Tokens, 15 asset cards, Elevators and Bathrooms cards, a Wild Card deck and a round counter.</p>
+<h3>3. Setup</h3><p>Choose 2–8 players and enter names. Everyone starts at New Semester with 1,200 TT. The game acts as banker and shuffles the deck. It rolls both dice for each player to decide who starts and rerolls ties for the highest total. Turn order follows the player list and wraps around. One round ends after all remaining players have taken a turn. Probation turns count.</p>
+<h3>4. Taking your turn</h3><p>Roll both dice and move clockwise by their total. Collect 200 TT when passing or landing on New Semester, once per crossing. Resolve the destination, then select End turn. Matching dice do not give an extra turn. Several players may share a space. In click-to-move mode, click the glowing destination after rolling.</p>
+<h3>5. Assets and prices</h3><table><tr><th>Asset</th><th>Purchase</th><th>Usage</th></tr>${NAMES.map((n,i)=>`<tr><td>${n}</td><td>${100+20*i} TT</td><td>${10+5*i} TT</td></tr>`).join('')}</table><p>These are fictional values. Special spaces appear between assets.</p>
+<h3>6. Elevators and Bathrooms</h3><p>Each costs 150 TT. Pay 4 × your dice total if the owner holds one utility. Pay 7 × if they own both. A total of 8 costs 32 TT or 56 TT. If a Wild Card moves you there, use your original dice total. No utility fees are collected during the owner’s probation.</p>
+<h3>7. Wild Cards</h3><p>Draw the top card, read it and follow its instructions. Used cards go to the bottom. Money is paid to or received from the bank unless a card states otherwise. Movement is clockwise unless specified. Resolve the new space normally and collect the semester payment if passed, except when sent to probation.</p><p>Keep the Study Card until needed. Use it at the beginning of a turn in probation to leave and take a normal turn. It then returns to the deck. It cannot be sold or transferred.</p>
+<h3>8. Buying and using assets</h3><p>Land on an unowned asset to buy it at its printed price. If you pass, it stays available. There are no auctions. Landing on another player’s asset requires paying its printed usage fee. There is no fee on your own asset, an unowned asset or an asset whose owner is in probation. There are no upgrades or colour-group bonuses.</p>
+<h3>9. Probation</h3><p>A Go to Probation space or Wild Card sends you directly to probation and ends your turn. Do not collect 200 TT. An ordinary landing is just visiting.</p><p>At the start of a probation turn, pay 50 TT, use a Study Card, try matching dice or wait. Payment or a Study Card lets you roll normally. Matching dice free you and move you by their total. A failed roll or waiting counts as one turn served. After three turns served, leave free at the start of your following turn. The turn you were sent there does not count.</p><div class="notice">You cannot collect asset or utility fees while in probation. Missed fees are not paid later. Collection resumes as soon as you leave.</div>
+<h3>10. Other spaces</h3><p>New Semester: collect 200 TT per crossing. Student Lounge: no action. Payment spaces: pay the printed amount to the bank. Go to Probation: go directly and end your turn.</p>
+<h3>11. If you cannot pay</h3><p>Sell assets or utilities to the bank for half their printed price during your turn or when you owe a payment. You may sell during probation. Returned assets become available again. If all sale proceeds still cannot cover your debt, your remaining money goes to the creditor, cards return to the bank or deck, and you leave the game. No loans or player-to-player trades. The digital bank records balances without a note limit.</p>
+<h3>12. How to win</h3><p>After everyone finishes Round 12, add cash to the printed purchase prices of all owned assets and utilities. Assets count even during probation. Study Cards have no value. Highest total wins. A tied total is broken by cash. If cash is tied too, share victory. If one player remains earlier, they win immediately.</p>
+<h3>13. Cautions</h3><p>Check ownership cards before payments. Keep balances and cards visible. All purchases and fees are fictional. Use Tiger Tokens only. If playing a physical version, keep dice and small pieces away from young children.</p>`;
+window.addEventListener('DOMContentLoaded',()=>{['setup-mascot','banner-mascot','hub-mascot'].forEach(id=>$(id).innerHTML=MascotSVG.generate('happy'));ui.setupPlayers();});
+// Keep keyboard focus within an open dialog.
+document.addEventListener('keydown',e=>{if(e.key!=='Tab'||$('modal').classList.contains('hidden'))return;const list=[...$('modal').querySelectorAll('button:not(:disabled),input,select')];if(!list.length)return;const first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
+
+</script>
+</body>
+</html>
+Displaying RIT_Dubai_Campus_Takeover.html.
